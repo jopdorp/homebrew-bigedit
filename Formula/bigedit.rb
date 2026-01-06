@@ -1,8 +1,8 @@
 class Bigedit < Formula
   desc "Fast text editor for very large files using journaling and FUSE"
   homepage "https://github.com/jopdorp/bigedit"
-  url "https://github.com/jopdorp/bigedit/archive/refs/tags/v0.1.10.tar.gz"
-  sha256 "e281eea121db29aefc436424f9355dd82ffdeae2fa6d27876ca218f547230d8b"
+  url "https://github.com/jopdorp/bigedit/archive/refs/tags/v0.1.11.tar.gz"
+  sha256 "87d2e316539438982ea3ecc95f485ffae48f93f71f9bc54984baa76ea9972134"
   license "MIT"
   head "https://github.com/jopdorp/bigedit.git", branch: "master"
 
@@ -16,8 +16,21 @@ class Bigedit < Formula
   def install
     if OS.mac?
       # On macOS, check if macFUSE is installed
-      if File.exist?("/Library/Filesystems/macfuse.fs") || File.exist?("/usr/local/lib/libfuse.dylib")
-        # macFUSE is installed, build with FUSE support
+      macfuse_installed = File.exist?("/Library/Filesystems/macfuse.fs") || 
+                          File.exist?("/usr/local/lib/libfuse.dylib") ||
+                          File.exist?("/opt/homebrew/lib/libfuse.dylib")
+      
+      if macfuse_installed
+        # Set PKG_CONFIG_PATH for macFUSE (supports both Intel and Apple Silicon)
+        fuse_pc_paths = [
+          "/usr/local/lib/pkgconfig",
+          "/opt/homebrew/lib/pkgconfig", 
+          "/Library/Frameworks/macFUSE.framework/Resources/pkgconfig"
+        ].select { |p| Dir.exist?(p) }.join(":")
+        
+        ENV.prepend_path "PKG_CONFIG_PATH", fuse_pc_paths unless fuse_pc_paths.empty?
+        
+        # Build with FUSE support
         system "cargo", "install", *std_cargo_args
         system "cargo", "build", "--release", "--bin", "bigedit-fuse"
         bin.install "target/release/bigedit-fuse"
@@ -34,7 +47,13 @@ class Bigedit < Formula
   end
 
   def caveats
-    if OS.mac? && !File.exist?("/Library/Filesystems/macfuse.fs") && !File.exist?("/usr/local/lib/libfuse.dylib")
+    macfuse_installed = OS.mac? && (
+      File.exist?("/Library/Filesystems/macfuse.fs") || 
+      File.exist?("/usr/local/lib/libfuse.dylib") ||
+      File.exist?("/opt/homebrew/lib/libfuse.dylib")
+    )
+    
+    if OS.mac? && !macfuse_installed
       <<~EOS
         bigedit was installed WITHOUT FUSE support.
         
