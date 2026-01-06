@@ -1,8 +1,8 @@
 class Bigedit < Formula
   desc "Fast text editor for very large files using journaling and FUSE"
   homepage "https://github.com/jopdorp/bigedit"
-  url "https://github.com/jopdorp/bigedit/archive/refs/tags/v0.1.12.tar.gz"
-  sha256 "2dc15a0a0f03db19e181c7b64fb660c096e9dd5b7b61bac340e34d4b89ba5471"
+  url "https://github.com/jopdorp/bigedit/archive/refs/tags/v0.1.13.tar.gz"
+  sha256 "b12f606171460d44f00f4c5642e1c5864aecb9baca9b4a71423af25a9b626897"
   license "MIT"
   head "https://github.com/jopdorp/bigedit.git", branch: "master"
 
@@ -59,8 +59,10 @@ class Bigedit < Formula
         
         To enable FUSE features (virtual file view for other programs):
           1. Install macFUSE: brew install --cask macfuse
-          2. Allow the kernel extension in System Settings > Privacy & Security
-          3. Reinstall bigedit: brew reinstall bigedit
+          2. Go to System Settings > Privacy & Security
+          3. Allow the system extension from developer "Benjamin Fleischer"
+          4. Reboot your Mac
+          5. Reinstall bigedit: brew reinstall bigedit
       EOS
     else
       <<~EOS
